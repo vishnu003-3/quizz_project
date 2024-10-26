@@ -2,19 +2,22 @@ import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:circular_countdown_timer/countdown_text_format.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:quizz_project/utils/constants/animation_constants.dart';
 import 'package:quizz_project/utils/constants/color_constants.dart';
 import 'package:quizz_project/view/dummydb.dart';
-import 'package:quizz_project/view/result_screen/sports_result_screen.dart';
+import 'package:quizz_project/view/result_screen/result_screen.dart';
 
 class SportsQuiz extends StatefulWidget {
-  const SportsQuiz({super.key});
+  dynamic dataIndex;
+  SportsQuiz({super.key, required this.dataIndex});
 
   @override
   State<SportsQuiz> createState() => _SportsQuizState();
 }
 
 class _SportsQuizState extends State<SportsQuiz> {
+  double percentage = 0.0;
   bool _isAnswered = false;
   int currentIndex = 0;
   int questIndex = 0;
@@ -22,12 +25,40 @@ class _SportsQuizState extends State<SportsQuiz> {
   int lastQuest = Dummydb.sportsQuestionList.length;
   int? selectedOption;
   int rightAnswerCount = 0;
+  late int sectionIndex;
   CountDownController timer = CountDownController();
+
+  @override
+  void initState() {
+    super.initState();
+    sectionIndex = widget.dataIndex;
+  }
+
+  void _updatePercentage() {
+    setState(() {
+      percentage = currentQuest / lastQuest;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ColorConstants.BackgroundColor,
       appBar: AppBar(
+        title: Padding(
+          padding: EdgeInsets.all(3),
+          child: new LinearPercentIndicator(
+            width: MediaQuery.of(context).size.width - 90,
+            animation: true,
+            lineHeight: 25.0,
+            animationDuration: 2000,
+            // Updated to pass fraction value between 0.0 and 1.0
+            percent: percentage,
+            center: Text("${(percentage * 100).toStringAsFixed(1)}%"),
+            linearStrokeCap: LinearStrokeCap.roundAll,
+            progressColor: Colors.greenAccent,
+          ),
+        ),
         actions: [
           Padding(
             padding: EdgeInsets.only(right: 10),
@@ -50,7 +81,8 @@ class _SportsQuizState extends State<SportsQuiz> {
                     margin: EdgeInsets.only(top: 20),
                     child: Center(
                       child: Text(
-                        Dummydb.sportsQuestionList[questIndex]["question"],
+                        Dummydball.quizList[sectionIndex]["Section"][questIndex]
+                            ["question"],
                         style: TextStyle(color: ColorConstants.TextColor),
                       ),
                     ),
@@ -90,8 +122,8 @@ class _SportsQuizState extends State<SportsQuiz> {
                               color: Colors.white,
                               fontWeight: FontWeight.bold),
                           textFormat: CountdownTextFormat.S,
-                          isReverse: false,
-                          isReverseAnimation: false,
+                          isReverse: true,
+                          isReverseAnimation: true,
                           isTimerTextShown: true,
                           autoStart: true,
                           onStart: () {
@@ -101,9 +133,6 @@ class _SportsQuizState extends State<SportsQuiz> {
                             debugPrint('Countdown Ended');
                             selectedOption = null;
                             if (currentQuest < lastQuest - 1) {
-                              currentQuest++;
-                              questIndex++;
-                              currentIndex++;
                               _isAnswered = true;
                               setState(() {});
                             }
@@ -114,7 +143,7 @@ class _SportsQuizState extends State<SportsQuiz> {
                           timeFormatterFunction:
                               (defaultFormatterFunction, duration) {
                             if (duration.inSeconds == 0) {
-                              return "Start";
+                              return "0";
                             } else {
                               return Function.apply(
                                   defaultFormatterFunction, [duration]);
@@ -127,7 +156,9 @@ class _SportsQuizState extends State<SportsQuiz> {
             ),
             Column(
               children: List.generate(
-                Dummydb.sportsQuestionList[currentIndex]["options"].length,
+                Dummydball
+                    .quizList[sectionIndex]["Section"][currentIndex]["options"]
+                    .length,
                 (optionindex) {
                   return Padding(
                     padding: const EdgeInsets.only(top: 10),
@@ -136,8 +167,8 @@ class _SportsQuizState extends State<SportsQuiz> {
                         if (!_isAnswered) {
                           selectedOption = optionindex;
                           if (selectedOption ==
-                              Dummydb.sportsQuestionList[currentIndex]
-                                  ["answerIndex"]) {
+                              Dummydball.quizList[sectionIndex]["Section"]
+                                  [currentIndex]["answerIndex"]) {
                             rightAnswerCount = rightAnswerCount + 1;
                           }
                           setState(() {
@@ -156,8 +187,8 @@ class _SportsQuizState extends State<SportsQuiz> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              Dummydb.sportsQuestionList[currentIndex]
-                                  ["options"][optionindex],
+                              Dummydball.quizList[sectionIndex]["Section"]
+                                  [currentIndex]["options"][optionindex],
                               style: TextStyle(
                                 color: ColorConstants.TextColor,
                                 fontSize: 17,
@@ -178,7 +209,7 @@ class _SportsQuizState extends State<SportsQuiz> {
             SizedBox(
               height: 20,
             ),
-            if (selectedOption != null)
+            if (_isAnswered || selectedOption != null)
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: InkWell(
@@ -189,13 +220,15 @@ class _SportsQuizState extends State<SportsQuiz> {
                       questIndex++;
                       currentIndex++;
                       _isAnswered = false;
-                      //    _updatePercentage();
+                      timer.restart(duration: 30);
+                      _updatePercentage();
                     } else {
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (context) => ResultScreen(
                               rightAnswerCount: rightAnswerCount,
+                              sectionCount: sectionIndex,
                             ),
                           ));
                     }

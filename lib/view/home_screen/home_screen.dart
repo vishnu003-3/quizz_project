@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quizz_project/global_widget/Custom_section.dart';
 import 'package:quizz_project/utils/constants/color_constants.dart';
 import 'package:quizz_project/view/dummydb.dart';
+import 'package:quizz_project/view/sports_quiz/sports_quiz.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -70,19 +71,19 @@ class HomeScreen extends StatelessWidget {
                     childAspectRatio: 1 / 1.15),
                 itemBuilder: (context, index) {
                   return CustomSection(
-                    section: Dummydb.sectionList[index]["SectionName"],
+                    section: Dummydball.quizList[index]["Categorry"],
                     onCardTaped: () {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              Dummydb.sectionList[index]["Navigation"],
-                        ),
+                            builder: (context) => SportsQuiz(
+                                dataIndex: Dummydball.quizList[index]
+                                    ["dataIndex"])),
                       );
                     },
                   );
                 },
-                itemCount: Dummydb.sectionList.length,
+                itemCount: Dummydball.quizList.length,
               ),
             )
           ],

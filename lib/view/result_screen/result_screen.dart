@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'package:quizz_project/utils/constants/color_constants.dart';
 import 'package:quizz_project/view/dummydb.dart';
+import 'package:quizz_project/view/home_screen/home_screen.dart';
 import 'package:quizz_project/view/sports_quiz/sports_quiz.dart';
 
 class ResultScreen extends StatefulWidget {
-  const ResultScreen({super.key, required this.rightAnswerCount});
-
+  ResultScreen(
+      {super.key, required this.rightAnswerCount, required this.sectionCount});
+  int sectionCount;
   final int rightAnswerCount;
 
   @override
@@ -16,6 +18,7 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   int starCount = 0;
   late int yourScore;
+  late int restartscreen;
 
   calculateStarccount() {
     var percentage =
@@ -31,6 +34,7 @@ class _ResultScreenState extends State<ResultScreen> {
     }
     print(percentage);
     yourScore = widget.rightAnswerCount;
+    restartscreen = widget.sectionCount;
   }
 
   @override
@@ -87,30 +91,66 @@ class _ResultScreenState extends State<ResultScreen> {
               SizedBox(
                 height: 30,
               ),
-              InkWell(
-                onTap: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SportsQuiz(),
-                    ),
-                    (route) => false,
-                  );
-                  calculateStarccount();
-                },
-                child: Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                      color: ColorConstants.TextColor,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.white)),
-                  child: Center(
-                    child: Text(
-                      "Restart",
-                      style: TextStyle(color: Colors.black, fontSize: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              SportsQuiz(dataIndex: restartscreen),
+                        ),
+                        (route) => false,
+                      );
+                      calculateStarccount();
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 150,
+                      decoration: BoxDecoration(
+                          color: ColorConstants.TextColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.white)),
+                      child: Center(
+                        child: Text(
+                          "Restart",
+                          style: TextStyle(color: Colors.black, fontSize: 20),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  SizedBox(
+                    width: 30,
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomeScreen(),
+                        ),
+                        (route) => false,
+                      );
+                      calculateStarccount();
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 150,
+                      decoration: BoxDecoration(
+                          color: ColorConstants.TextColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.white)),
+                      child: Center(
+                        child: Text(
+                          "Main Menu",
+                          style: TextStyle(color: Colors.black, fontSize: 20),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
